@@ -1,9 +1,11 @@
 #include <iostream>
 
-using namespace std;
+using std::cout;
+using std::endl;
 
 #include "inipaser.h"
 #include "rabbitmq.h"
+#include "common.h"
 
 #pragma comment(lib,"rabbitmq.4.lib")
 
