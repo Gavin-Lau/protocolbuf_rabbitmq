@@ -7,7 +7,11 @@ using std::endl;
 #include "rabbitmq.h"
 #include "common.h"
 
-#pragma comment(lib,"rabbitmq.4.lib")
+#if defined(_DEBUG) || defined(DEBUG)
+# pragma comment(lib,"librabbitmqd.4.lib")
+#else
+# pragma comment(lib,"librabbitmq.4.lib")
+#endif
 
 
 int main()

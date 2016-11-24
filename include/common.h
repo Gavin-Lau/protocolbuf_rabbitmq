@@ -18,15 +18,14 @@
 # endif
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define		UNKNOW_ERROR					-1
+#define		OK								0
+#define		RBT_INIT_FAIL					-1001
+#define		RBT_CONN_TIMEOUT				-1002
+#define		RBT_LOGIN_FAIL					-1003
+#define		RBT_CHANNEL_OPEN_FAIL			-1004
+#define		RBT_DECLERE_EXCHANGE_FAIL		-1005
 
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 

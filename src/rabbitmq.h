@@ -7,26 +7,29 @@
 #include <amqp.h>
 #include <amqp_tcp_socket.h>
 
-class Rabbitmq {
+#include "common.h"
+
+class RabbitMQ{
 
 public:
-
-	Rabbitmq(const char*host, short port);
-	~Rabbitmq();
-	void conn(int timeout);
-	void declare_exchange(const char* exchange, const char* exchangetype);
+	enum EXCHANGE_TYPE {DIRECT = 0, FANOUT, TOPIC};
+	RabbitMQ();
+	~RabbitMQ();
+	void connect(const char*host, unsigned short port, double timeout, int channel = 1);
+	void declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType);
 	void send(const char*exchange, const char* routeKey, const char* data);
 	void bind(const char*exchange, const char* bindkey);
 	void unbind(const char*exchange, const char* bindkey);
-
+	int getRabbitmqErrno(int ret);
+	std::string getRabbitmqErrstr(int err);
 private:
+	const std::string ExTypeName[3] = {"direct", "fanout", "topic"};
 	/* conn info */
-	std::string					m_host;
-	short						m_port;
-	std::vector<std::string>	m_vexchange;
+	std::vector<std::string>	exchanges;
 	/* rabbitmq handlers */
-	amqp_socket_t*				m_socket;
-	amqp_connection_state_t		m_conn;
+	amqp_socket_t*				socket;
+	amqp_connection_state_t		conn;
+	int							errnum;
 };
 
 #endif //_RABBITMQ_H_
