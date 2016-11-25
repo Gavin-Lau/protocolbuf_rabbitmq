@@ -25,6 +25,9 @@
 #define		RBT_LOGIN_FAIL					-1003
 #define		RBT_CHANNEL_OPEN_FAIL			-1004
 #define		RBT_DECLERE_EXCHANGE_FAIL		-1005
+#define		RBT_BIND_FAIL					-1006
+#define		RBT_DECLERE_QUEUE_FAIL			-1006
+
 
 
 
