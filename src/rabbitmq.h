@@ -18,9 +18,16 @@ public:
 	void connect(const char*host, unsigned short port, double timeout, int);
 	void declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType);
 	void declareQueue(const char* exchange, EXCHANGE_TYPE exchangeType);
-	void send(const char*exchange, const char* routeKey, const char* data, size_t len);
 	void bind(const char*exchange, const char* queue, const char* bindkey);
 	void unbind(const char*exchange, const char* queue, const char* bindkey);
+
+	void publish(const char*exchange, const char* routeKey, const char* data, size_t len);
+	void publishRPC(const char*exchange, const char* routeKey, const char* data, size_t len);
+
+	/** subscribe -> get next msg -> unsubscribe */
+	void get();
+	/** high performance */
+	void consume(const char* queue);
 
 	int getRabbitmqErrno(int ret);
 	std::string getRabbitmqErrstr(int err);

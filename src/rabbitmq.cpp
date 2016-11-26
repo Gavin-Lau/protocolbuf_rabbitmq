@@ -114,7 +114,7 @@ void RabbitMQ::unbind(const char*exchange, const char* queue, const char* bindke
 	}
 }
 
-void RabbitMQ::send(const char*exchange, const char* routeKey, const char* data, size_t len)
+void RabbitMQ::publish(const char*exchange, const char* routeKey, const char* data, size_t len)
 {
 	if (errnum < 0) return;
 	amqp_bytes_t sbuf;
@@ -130,8 +130,13 @@ void RabbitMQ::send(const char*exchange, const char* routeKey, const char* data,
 		amqp_cstring_bytes(exchange),
 		amqp_cstring_bytes(routeKey),
 		0, 0, &props, sbuf);
-	
+	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
+	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+	{
+		errnum = RBT_PUBLISH_FAIL;
+	}
 }
+
 
 int RabbitMQ::getRabbitmqErrno(int ret)
 {
@@ -141,5 +146,23 @@ int RabbitMQ::getRabbitmqErrno(int ret)
 std::string RabbitMQ::getRabbitmqErrstr(int err)
 {
 
+}
+
+void RabbitMQ::get()
+{
+
+}
+
+void RabbitMQ::consume(const char* queue)
+{
+	amqp_basic_consume(conn, 1, amqp_cstring_bytes(queue), amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
+	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
+	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+	{
+		errnum = RBT_CONSUME_FAIL;
+	}
+
+	amqp_maybe_release_buffers(conn);
+	ret = amqp_consume_message(conn, &envelope, NULL, 0);
 }
 
