@@ -148,12 +148,13 @@ void RabbitMQ::publish(const char*exchange, const char* routeKey, const char* da
 	}
 }
 
-void RabbitMQ::get()
+int RabbitMQ::getRabbitmqErrno(int ret)
 {
 
 }
 
 void RabbitMQ::consume(const char* queue)
+std::string RabbitMQ::getRabbitmqErrstr(int err)
 {
 	/**
 	amqp_basic_consume(amqp_connection_state_t state, amqp_channel_t channel, 
@@ -190,13 +191,23 @@ void RabbitMQ::consume(const char* queue)
 	amqp_destroy_envelope(&envelope);
 }
 
-int RabbitMQ::getRabbitmqErrno(int ret)
+void RabbitMQ::get()
 {
 	return 0;
 }
 
-std::string RabbitMQ::getRabbitmqErrstr(int err)
+void RabbitMQ::consume(const char* queue)
 {
 	return "";
+
+	amqp_basic_consume(conn, 1, amqp_cstring_bytes(queue), amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
+	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
+	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+	{
+		errnum = RBT_CONSUME_FAIL;
+	}
+
+	amqp_maybe_release_buffers(conn);
+	ret = amqp_consume_message(conn, &envelope, NULL, 0);
 }
 
