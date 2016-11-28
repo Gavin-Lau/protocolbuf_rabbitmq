@@ -74,6 +74,7 @@
     <ClCompile Include="..\test\test_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\timer.h" />
     <ClInclude Include="..\src\inipaser.h" />
     <ClInclude Include="..\src\rabbitmq.h" />
   </ItemGroup>
