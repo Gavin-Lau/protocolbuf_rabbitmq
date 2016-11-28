@@ -28,9 +28,7 @@
 #define		RBT_BIND_FAIL					-1006
 #define		RBT_PUBLISH_FAIL				-1007
 #define		RBT_CONSUME_FAIL				-1008
-#define		RBT_CONSUME_FAIL				-1009
-
-
+#define		RBT_DECLERE_QUEUE_FAIL			-1009
 
 
 

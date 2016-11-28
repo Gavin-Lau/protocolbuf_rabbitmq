@@ -17,12 +17,11 @@ public:
 	~RabbitMQ();
 	void connect(const char*host, unsigned short port, double timeout, int);
 	void declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType);
-	void declareQueue(const char* exchange, EXCHANGE_TYPE exchangeType);
+	void declareQueue(const char* queue);
 	void bind(const char*exchange, const char* queue, const char* bindkey);
 	void unbind(const char*exchange, const char* queue, const char* bindkey);
 
 	void publish(const char*exchange, const char* routeKey, const char* data, size_t len);
-	void publishRPC(const char*exchange, const char* routeKey, const char* data, size_t len);
 
 	/** subscribe -> get next msg -> unsubscribe */
 	void get();
@@ -34,7 +33,7 @@ public:
 
 private:
 
-	const std::string ExTypeName[3] = {"direct", "fanout", "topic"};
+	static const char ExTypeName[3][15]; //msvc do not allow initial here, Micro. S**K!
 	/* conn info */
 	std::vector<std::string>	exchanges;
 	/* rabbitmq handlers */
