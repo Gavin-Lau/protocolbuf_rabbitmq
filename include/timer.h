@@ -26,6 +26,7 @@ inline uint64_t microsec_now(void)
 class MicroTimer{
 public:
 	MicroTimer() { mseconds = microsec_now(); }
+	void reset() { mseconds = microsec_now(); }
 	uint64_t expired() { return (microsec_now() - mseconds);  }
 private:
 	uint64_t  mseconds;

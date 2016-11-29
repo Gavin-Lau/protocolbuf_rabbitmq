@@ -15,6 +15,7 @@ using std::endl;
 const char RabbitMQ::ExTypeName[3][15] = { "direct", "fanout", "topic" };
 
 RabbitMQ::RabbitMQ()
+	: recbuf(new std::string)
 {
 	conn = amqp_new_connection();
 	socket = amqp_tcp_socket_new(conn);
@@ -31,6 +32,7 @@ RabbitMQ::~RabbitMQ()
 	amqp_channel_close(conn, DEFAULT_CHANNEL, AMQP_REPLY_SUCCESS);
 	amqp_connection_close(conn, AMQP_REPLY_SUCCESS);
 	amqp_destroy_connection(conn);
+	delete recbuf;
 }
 
 void RabbitMQ::connect(const char*host = "127.0.0.1", 
@@ -65,11 +67,19 @@ void RabbitMQ::connect(const char*host = "127.0.0.1",
 void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 {
 	if (errnum < 0) return;
-	//amqp_exchange_declare(amqp_connection_state_t state, amqp_channel_t channel, amqp_bytes_t exchange, amqp_bytes_t type, amqp_boolean_t passive, amqp_boolean_t durable, amqp_boolean_t auto_delete, amqp_boolean_t internal, amqp_table_t arguments);
+	/*amqp_exchange_declare(amqp_connection_state_t state, amqp_channel_t channel, 
+					amqp_bytes_t exchange, amqp_bytes_t type, 
+					amqp_boolean_t passive, amqp_boolean_t durable, 
+					amqp_boolean_t auto_delete, amqp_boolean_t internal, amqp_table_t arguments);
+	*/
 	amqp_exchange_declare(conn, DEFAULT_CHANNEL, 
 			amqp_cstring_bytes(exchange),
 			amqp_cstring_bytes(ExTypeName[exchangeType]),
-			0, 0, 0, 0, amqp_empty_table);
+			0, //仅仅想查询某一个队列是否已存在，如果不存在，不想建立该队列，仍然可以调用queue.declare，只不过需要将参数passive设为true
+			0, //队列和交换机有一个创建时候指定的标志durable，直译叫做坚固的。durable的唯一含义就是具有这个标志的队列和交换机会在重启之后重新建立，它不表示说在队列当中的消息会在重启后恢复。
+			0, //当所有绑定队列都不再使用时，是否自动删除该交换机。
+			0, //表示这个exchange不可以被client用来推送消息，仅用来进行exchange和exchange之间的绑定。
+			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
@@ -79,9 +89,17 @@ void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 
 void RabbitMQ::declareQueue(const char* queue)
 {
-	//amqp_queue_declare(amqp_connection_state_t state, amqp_channel_t channel, amqp_bytes_t queue, amqp_boolean_t passive, amqp_boolean_t durable, amqp_boolean_t exclusive, amqp_boolean_t auto_delete, amqp_table_t arguments);
+	/*amqp_queue_declare(amqp_connection_state_t state, amqp_channel_t channel, 
+				amqp_bytes_t queue, amqp_boolean_t passive, amqp_boolean_t durable, 
+				amqp_boolean_t exclusive, amqp_boolean_t auto_delete, 
+				amqp_table_t arguments);	
+	*/
 	amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, DEFAULT_CHANNEL, 
-			amqp_cstring_bytes(queue), 0, 0, 0, 1,
+			amqp_cstring_bytes(queue), 
+			0, //当参数为true时，只是用来查询队列是否存在，不存在情况下不会新建队列
+			0, //队列是否持久化
+			0, //当前连接不在时，队列是否自动删除
+			0, //没有consumer时，队列是否自动删除
 			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
@@ -148,32 +166,35 @@ void RabbitMQ::publish(const char*exchange, const char* routeKey, const char* da
 	}
 }
 
-void RabbitMQ::get()
-{
-
-}
-
-void RabbitMQ::consume(const char* queue)
+void RabbitMQ::consumeBegin(const char*queue)
 {
 	/**
-	amqp_basic_consume(amqp_connection_state_t state, amqp_channel_t channel, 
-					amqp_bytes_t queue, amqp_bytes_t consumer_tag, 
-					amqp_boolean_t no_local, amqp_boolean_t no_ack, 
-					amqp_boolean_t exclusive, amqp_table_t arguments);
+	amqp_basic_consume(amqp_connection_state_t state, amqp_channel_t channel,
+				amqp_bytes_t queue, amqp_bytes_t consumer_tag,
+				amqp_boolean_t no_local, amqp_boolean_t no_ack,
+				amqp_boolean_t exclusive, amqp_table_t arguments);
 	*/
-	amqp_basic_consume(conn, DEFAULT_CHANNEL, 
-			amqp_cstring_bytes(queue), amqp_empty_bytes, 
-			0, 1, 0, amqp_empty_table);
+	amqp_basic_consume(conn, DEFAULT_CHANNEL,
+		amqp_cstring_bytes(queue), amqp_empty_bytes,
+		0, 1, 0, amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_CONSUME_FAIL;
 	}
+}
 
-	amqp_envelope_t envelope;
+std::string* RabbitMQ::consume()
+{
+	recbuf->clear();
 	amqp_maybe_release_buffers(conn);
-	ret = amqp_consume_message(conn, &envelope, NULL, 0);
-
+	amqp_rpc_reply_t ret = amqp_consume_message(conn, &envelope, NULL, 0);
+	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+	{
+		errnum = RBT_CONSUME_FAIL;
+		return NULL;
+	}
+#ifdef MYDEBUG
 	printf("Delivery %u, exchange %.*s routingkey %.*s\n",
 		(unsigned)envelope.delivery_tag,
 		(int)envelope.exchange.len, (char *)envelope.exchange.bytes,
@@ -185,9 +206,17 @@ void RabbitMQ::consume(const char* queue)
 			(char *)envelope.message.properties.content_type.bytes);
 	}
 
-	std::string message_ = std::string((char*)envelope.message.body.bytes, envelope.message.body.len);
+	printf("Message body:%s\n", message_.c_str());
+#endif
+	recbuf->append( std::string((char*)envelope.message.body.bytes, envelope.message.body.len));
+	return recbuf;
+}
 
-	amqp_destroy_envelope(&envelope);
+void RabbitMQ::consumeEnd() { amqp_destroy_envelope(&envelope); }
+
+void RabbitMQ::get()
+{
+
 }
 
 int RabbitMQ::getRabbitmqErrno(int ret)

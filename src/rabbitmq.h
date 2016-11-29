@@ -8,7 +8,8 @@
 #include <amqp_tcp_socket.h>
 
 #include "common.h"
-#define		DEFAULT_CHANNEL 1
+#define		DEFAULT_CHANNEL		1
+#define		DEFAULT_AUTODEL		0
 class RabbitMQ{
 
 public:
@@ -25,8 +26,11 @@ public:
 
 	/** subscribe -> get next msg -> unsubscribe */
 	void get();
+
 	/** high performance */
-	void consume(const char* queue);
+	void consumeBegin(const char*queue);
+	std::string* consume();
+	void consumeEnd();
 
 	int getRabbitmqErrno(int ret);
 	std::string getRabbitmqErrstr(int err);
@@ -40,6 +44,10 @@ private:
 	amqp_socket_t*				socket;
 	amqp_connection_state_t		conn;
 	int							errnum;
+
+	amqp_envelope_t				envelope;
+	std::string*				recbuf;
+
 };
 
 #endif //_RABBITMQ_H_
