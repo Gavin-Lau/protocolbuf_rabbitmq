@@ -13,13 +13,12 @@ using std::endl;
 # pragma comment(lib,"librabbitmq.4.lib")
 #endif
 
-
 int main()
 {
 	RabbitMQ rmq;
 	rmq.connect("127.0.0.1",5672,5,1);
 	rmq.declarExchange("test1", RabbitMQ::DIRECT);
-	rmq.declareQueue("test1.1");
+	rmq.declareQ("test1.1");	
 	rmq.bind("test1", "test1.1", "test");
 	int countp = 10000;
 

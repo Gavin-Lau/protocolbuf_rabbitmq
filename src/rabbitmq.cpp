@@ -9,6 +9,8 @@
 
 #include "rabbitmq.h"
 
+#define MYDEBUG
+
 using std::cout;
 using std::endl;
 
@@ -87,7 +89,7 @@ void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 	}
 }
 
-void RabbitMQ::declareQueue(const char* queue)
+void RabbitMQ::declareQ(const char* queue)
 {
 	/*amqp_queue_declare(amqp_connection_state_t state, amqp_channel_t channel, 
 				amqp_bytes_t queue, amqp_boolean_t passive, amqp_boolean_t durable, 
@@ -184,6 +186,7 @@ void RabbitMQ::consumeBegin(const char*queue)
 	}
 }
 
+/** consumer type1: as subscribe  tested:faster */
 std::string* RabbitMQ::consume()
 {
 	recbuf->clear();
@@ -194,6 +197,9 @@ std::string* RabbitMQ::consume()
 		errnum = RBT_CONSUME_FAIL;
 		return NULL;
 	}
+	const amqp_basic_properties_t& props = envelope.message.properties;
+	recbuf->append( std::string((char*)envelope.message.body.bytes, envelope.message.body.len));
+
 #ifdef MYDEBUG
 	printf("Delivery %u, exchange %.*s routingkey %.*s\n",
 		(unsigned)envelope.delivery_tag,
@@ -205,14 +211,71 @@ std::string* RabbitMQ::consume()
 			(int)envelope.message.properties.content_type.len,
 			(char *)envelope.message.properties.content_type.bytes);
 	}
-
-	printf("Message body:%s\n", message_.c_str());
+	if (props.reply_to.bytes != NULL)
+	{
+		printf("Reply to queue: %.*s\n", props.reply_to.bytes, props.reply_to.len);
+	}
+	printf("Message body:%s\n", recbuf->c_str());
 #endif
-	recbuf->append( std::string((char*)envelope.message.body.bytes, envelope.message.body.len));
+
 	return recbuf;
 }
 
-void RabbitMQ::consumeEnd() { amqp_destroy_envelope(&envelope); }
+std::string* RabbitMQ::consumeRPC(const char* replyMsg)
+{
+
+}
+
+/** consumer type2: using frame api  tested:slower than type1 */
+//std::string* RabbitMQ::consume()
+//{
+//	amqp_frame_t frame;
+//	amqp_basic_deliver_t *d;
+//	amqp_basic_properties_t *p;
+//	size_t body_target;
+//	size_t body_received;
+//	int ret;
+//
+//	amqp_maybe_release_buffers(conn);
+//	ret = amqp_simple_wait_frame(conn, &frame);
+//	if (ret < 0)  return NULL;
+//	if (frame.frame_type != AMQP_FRAME_METHOD) return NULL;
+//	if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) return NULL;
+//	d = (amqp_basic_deliver_t *)frame.payload.method.decoded;
+//#ifdef MYDEBUG
+//	printf("Frame type: %u channel: %u\n", frame.frame_type,
+//		frame.channel);
+//	printf("Method: %s\n", amqp_method_name(frame.payload.method.id));
+//	
+//	printf("Delivery: %u exchange: %.*s routingkey: %.*s\n",
+//		(unsigned)d->delivery_tag,
+//		(int)d->exchange.len, (char *)d->exchange.bytes,
+//		(int)d->routing_key.len, (char *)d->routing_key.bytes);
+//#endif
+//	ret = amqp_simple_wait_frame(conn, &frame);
+//	if (ret < 0) return NULL;
+//	if (frame.frame_type != AMQP_FRAME_HEADER) return NULL;
+//	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
+//	if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG == 0) return NULL;
+//
+//#ifdef MYDEBUG
+//	printf("Content-type: %.*s\n",
+//			(int)p->content_type.len, (char *)p->content_type.bytes);
+//#endif
+//	//receiving until message end
+//	body_target = (size_t)frame.payload.properties.body_size;
+//	body_received = 0;
+//
+//	while (body_received < body_target) {
+//		ret = amqp_simple_wait_frame(conn, &frame);
+//		if (ret < 0) break;
+//
+//		if (frame.frame_type != AMQP_FRAME_BODY) return NULL;
+//
+//		body_received += frame.payload.body_fragment.len;
+//		std::string message_((char*)frame.payload.body_fragment.bytes, frame.payload.body_fragment.len);
+//	}
+//}
 
 void RabbitMQ::get()
 {
