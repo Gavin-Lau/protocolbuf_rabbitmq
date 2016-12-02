@@ -12,11 +12,9 @@
 using std::cout;
 using std::endl;
 
-int main() 
+int main()
 {
 
 	getchar();
 	return 0;
 }
-
-

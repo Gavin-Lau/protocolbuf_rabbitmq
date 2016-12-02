@@ -129,4 +129,3 @@ IniParser::Section& IniParser::getSection(const char* sectionName)
 		return (Section());
 	}
 }
-

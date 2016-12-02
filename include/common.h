@@ -2,7 +2,7 @@
 #define _COMMON_TOOLS_H_
 
 
-#define IS_VALID_PCHAR(pchar)		(NULL != pchar && 0 != pchar[0]) 
+#define IS_VALID_PCHAR(pchar)		(NULL != pchar && 0 != pchar[0])
 #define IS_VALID_NUM_0EXCEPT(val)	(val > 0)
 #define IS_VALID_NUM_0INCLUDE(val)	(val >= 0)
 #define IS_VALID_ALPHABET(ch)		( (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') )

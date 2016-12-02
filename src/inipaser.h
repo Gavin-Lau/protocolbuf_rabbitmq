@@ -29,7 +29,7 @@ public:
 
 private:
 
-	
+
 	typedef std::map<std::string, Section>		iroot;
 	iroot	m_iniroot;
 	std::vector<std::string> m_vsecs;

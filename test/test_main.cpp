@@ -18,7 +18,7 @@ int main()
 	RabbitMQ rmq;
 	rmq.connect("127.0.0.1",5672,5,1);
 	rmq.declarExchange("test1", RabbitMQ::DIRECT);
-	rmq.declareQ("test1.1");	
+	rmq.declareQ("test1.1");
 	rmq.bind("test1", "test1.1", "test");
 	int countp = 10000;
 
@@ -38,7 +38,7 @@ int main()
 	}
 	rmq.consumeEnd();
 	cout << "接收\"Hello World\"[10000]次,用时：" << timer.expired() << "ms" << endl;
-	
+
 	// rpc模式
 
 	system("pause");

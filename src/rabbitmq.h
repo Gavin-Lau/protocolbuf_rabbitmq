@@ -28,13 +28,13 @@ public:
 	void publish(const char*exchange, const char* routeKey, const char* data, size_t len);
 
 	/** subscribe -> get next msg(only one message) -> unsubscribe TODO*/
-	void get();
+	void get(const char* queue);
 
 	/** high performance for bulk/large-amount data*/
 	void consumeBegin(const char*queue);
 	std::string* consume();
 	std::string* consumeRPC(const char* replyMsg);
-	void consumeEnd()  { amqp_destroy_envelope(&envelope); }
+	void consumeEnd()  { }
 
 	int getRabbitmqErrno(int ret);
 	std::string getRabbitmqErrstr(int err);
@@ -49,7 +49,6 @@ private:
 	amqp_connection_state_t		conn;
 	int							errnum;
 
-	amqp_envelope_t				envelope;
 	std::string*				recbuf;
 	std::string					replyToQ;
 

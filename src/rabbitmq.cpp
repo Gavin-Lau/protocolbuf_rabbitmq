@@ -9,7 +9,7 @@
 
 #include "rabbitmq.h"
 
-#define MYDEBUG
+//#define MYDEBUG
 
 using std::cout;
 using std::endl;
@@ -37,8 +37,8 @@ RabbitMQ::~RabbitMQ()
 	delete recbuf;
 }
 
-void RabbitMQ::connect(const char*host = "127.0.0.1", 
-			unsigned short port = 5672, 
+void RabbitMQ::connect(const char*host = "127.0.0.1",
+			unsigned short port = 5672,
 			double timeout = 5.0, int channel = DEFAULT_CHANNEL)
 {
 	if (errnum < 0) return;
@@ -69,18 +69,18 @@ void RabbitMQ::connect(const char*host = "127.0.0.1",
 void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 {
 	if (errnum < 0) return;
-	/*amqp_exchange_declare(amqp_connection_state_t state, amqp_channel_t channel, 
-					amqp_bytes_t exchange, amqp_bytes_t type, 
-					amqp_boolean_t passive, amqp_boolean_t durable, 
+	/*amqp_exchange_declare(amqp_connection_state_t state, amqp_channel_t channel,
+					amqp_bytes_t exchange, amqp_bytes_t type,
+					amqp_boolean_t passive, amqp_boolean_t durable,
 					amqp_boolean_t auto_delete, amqp_boolean_t internal, amqp_table_t arguments);
 	*/
-	amqp_exchange_declare(conn, DEFAULT_CHANNEL, 
+	amqp_exchange_declare(conn, DEFAULT_CHANNEL,
 			amqp_cstring_bytes(exchange),
 			amqp_cstring_bytes(ExTypeName[exchangeType]),
-			0, //½ö½öÏë²éÑ¯Ä³Ò»¸ö¶ÓÁÐÊÇ·ñÒÑ´æÔÚ£¬Èç¹û²»´æÔÚ£¬²»Ïë½¨Á¢¸Ã¶ÓÁÐ£¬ÈÔÈ»¿ÉÒÔµ÷ÓÃqueue.declare£¬Ö»²»¹ýÐèÒª½«²ÎÊýpassiveÉèÎªtrue
-			0, //¶ÓÁÐºÍ½»»»»úÓÐÒ»¸ö´´½¨Ê±ºòÖ¸¶¨µÄ±êÖ¾durable£¬Ö±Òë½Ð×ö¼á¹ÌµÄ¡£durableµÄÎ¨Ò»º¬Òå¾ÍÊÇ¾ßÓÐÕâ¸ö±êÖ¾µÄ¶ÓÁÐºÍ½»»»»ú»áÔÚÖØÆôÖ®ºóÖØÐÂ½¨Á¢£¬Ëü²»±íÊ¾ËµÔÚ¶ÓÁÐµ±ÖÐµÄÏûÏ¢»áÔÚÖØÆôºó»Ö¸´¡£
-			0, //µ±ËùÓÐ°ó¶¨¶ÓÁÐ¶¼²»ÔÙÊ¹ÓÃÊ±£¬ÊÇ·ñ×Ô¶¯É¾³ý¸Ã½»»»»ú¡£
-			0, //±íÊ¾Õâ¸öexchange²»¿ÉÒÔ±»clientÓÃÀ´ÍÆËÍÏûÏ¢£¬½öÓÃÀ´½øÐÐexchangeºÍexchangeÖ®¼äµÄ°ó¶¨¡£
+			0, //ä»…ä»…æƒ³æŸ¥è¯¢æŸä¸€ä¸ªé˜Ÿåˆ—æ˜¯å¦å·²å­˜åœ¨ï¼Œå¦‚æžœä¸å­˜åœ¨ï¼Œä¸æƒ³å»ºç«‹è¯¥é˜Ÿåˆ—ï¼Œä»ç„¶å¯ä»¥è°ƒç”¨queue.declareï¼Œåªä¸è¿‡éœ€è¦å°†å‚æ•°passiveè®¾ä¸ºtrue
+			0, //é˜Ÿåˆ—å’Œäº¤æ¢æœºæœ‰ä¸€ä¸ªåˆ›å»ºæ—¶å€™æŒ‡å®šçš„æ ‡å¿—durableï¼Œç›´è¯‘å«åšåšå›ºçš„ã€‚durableçš„å”¯ä¸€å«ä¹‰å°±æ˜¯å…·æœ‰è¿™ä¸ªæ ‡å¿—çš„é˜Ÿåˆ—å’Œäº¤æ¢æœºä¼šåœ¨é‡å¯ä¹‹åŽé‡æ–°å»ºç«‹ï¼Œå®ƒä¸è¡¨ç¤ºè¯´åœ¨é˜Ÿåˆ—å½“ä¸­çš„æ¶ˆæ¯ä¼šåœ¨é‡å¯åŽæ¢å¤ã€‚
+			0, //å½“æ‰€æœ‰ç»‘å®šé˜Ÿåˆ—éƒ½ä¸å†ä½¿ç”¨æ—¶ï¼Œæ˜¯å¦è‡ªåŠ¨åˆ é™¤è¯¥äº¤æ¢æœºã€‚
+			0, //è¡¨ç¤ºè¿™ä¸ªexchangeä¸å¯ä»¥è¢«clientç”¨æ¥æŽ¨é€æ¶ˆæ¯ï¼Œä»…ç”¨æ¥è¿›è¡Œexchangeå’Œexchangeä¹‹é—´çš„ç»‘å®šã€‚
 			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
@@ -91,17 +91,17 @@ void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 
 void RabbitMQ::declareQ(const char* queue)
 {
-	/*amqp_queue_declare(amqp_connection_state_t state, amqp_channel_t channel, 
-				amqp_bytes_t queue, amqp_boolean_t passive, amqp_boolean_t durable, 
-				amqp_boolean_t exclusive, amqp_boolean_t auto_delete, 
-				amqp_table_t arguments);	
+	/*amqp_queue_declare(amqp_connection_state_t state, amqp_channel_t channel,
+				amqp_bytes_t queue, amqp_boolean_t passive, amqp_boolean_t durable,
+				amqp_boolean_t exclusive, amqp_boolean_t auto_delete,
+				amqp_table_t arguments);
 	*/
-	amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, DEFAULT_CHANNEL, 
-			amqp_cstring_bytes(queue), 
-			0, //µ±²ÎÊýÎªtrueÊ±£¬Ö»ÊÇÓÃÀ´²éÑ¯¶ÓÁÐÊÇ·ñ´æÔÚ£¬²»´æÔÚÇé¿öÏÂ²»»áÐÂ½¨¶ÓÁÐ
-			0, //¶ÓÁÐÊÇ·ñ³Ö¾Ã»¯
-			0, //µ±Ç°Á¬½Ó²»ÔÚÊ±£¬¶ÓÁÐÊÇ·ñ×Ô¶¯É¾³ý
-			0, //Ã»ÓÐconsumerÊ±£¬¶ÓÁÐÊÇ·ñ×Ô¶¯É¾³ý
+	amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, DEFAULT_CHANNEL,
+			amqp_cstring_bytes(queue),
+			0, //å½“å‚æ•°ä¸ºtrueæ—¶ï¼Œåªæ˜¯ç”¨æ¥æŸ¥è¯¢é˜Ÿåˆ—æ˜¯å¦å­˜åœ¨ï¼Œä¸å­˜åœ¨æƒ…å†µä¸‹ä¸ä¼šæ–°å»ºé˜Ÿåˆ—
+			0, //é˜Ÿåˆ—æ˜¯å¦æŒä¹…åŒ–
+			0, //å½“å‰è¿žæŽ¥ä¸åœ¨æ—¶ï¼Œé˜Ÿåˆ—æ˜¯å¦è‡ªåŠ¨åˆ é™¤
+			0, //æ²¡æœ‰consumeræ—¶ï¼Œé˜Ÿåˆ—æ˜¯å¦è‡ªåŠ¨åˆ é™¤
 			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
@@ -150,7 +150,7 @@ void RabbitMQ::publish(const char*exchange, const char* routeKey, const char* da
 	props.content_type = amqp_cstring_bytes("text/plain");
 	props.delivery_mode = 2;//non-persistent (1) or persistent (2)
 
-	/** 
+	/**
 	* AMQP_CALL amqp_basic_publish(amqp_connection_state_t state, amqp_channel_t channel,
 							amqp_bytes_t exchange, amqp_bytes_t routing_key,
 							amqp_boolean_t mandatory, amqp_boolean_t immediate,
@@ -186,99 +186,137 @@ void RabbitMQ::consumeBegin(const char*queue)
 	}
 }
 
-/** consumer type1: as subscribe  tested:faster */
-std::string* RabbitMQ::consume()
-{
-	recbuf->clear();
-	amqp_maybe_release_buffers(conn);
-	amqp_rpc_reply_t ret = amqp_consume_message(conn, &envelope, NULL, 0);
-	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
-	{
-		errnum = RBT_CONSUME_FAIL;
-		return NULL;
-	}
-	const amqp_basic_properties_t& props = envelope.message.properties;
-	recbuf->append( std::string((char*)envelope.message.body.bytes, envelope.message.body.len));
-
-#ifdef MYDEBUG
-	printf("Delivery %u, exchange %.*s routingkey %.*s\n",
-		(unsigned)envelope.delivery_tag,
-		(int)envelope.exchange.len, (char *)envelope.exchange.bytes,
-		(int)envelope.routing_key.len, (char *)envelope.routing_key.bytes);
-
-	if (envelope.message.properties._flags & AMQP_BASIC_CONTENT_TYPE_FLAG) {
-		printf("Content-type: %.*s\n",
-			(int)envelope.message.properties.content_type.len,
-			(char *)envelope.message.properties.content_type.bytes);
-	}
-	if (props.reply_to.bytes != NULL)
-	{
-		printf("Reply to queue: %.*s\n", props.reply_to.bytes, props.reply_to.len);
-	}
-	printf("Message body:%s\n", recbuf->c_str());
-#endif
-
-	return recbuf;
-}
-
-std::string* RabbitMQ::consumeRPC(const char* replyMsg)
-{
-
-}
-
-/** consumer type2: using frame api  tested:slower than type1 */
+///** consumer type1: as subscribe  tested:faster */
 //std::string* RabbitMQ::consume()
 //{
-//	amqp_frame_t frame;
-//	amqp_basic_deliver_t *d;
-//	amqp_basic_properties_t *p;
-//	size_t body_target;
-//	size_t body_received;
-//	int ret;
-//
+//	recbuf->clear();
 //	amqp_maybe_release_buffers(conn);
-//	ret = amqp_simple_wait_frame(conn, &frame);
-//	if (ret < 0)  return NULL;
-//	if (frame.frame_type != AMQP_FRAME_METHOD) return NULL;
-//	if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) return NULL;
-//	d = (amqp_basic_deliver_t *)frame.payload.method.decoded;
-//#ifdef MYDEBUG
-//	printf("Frame type: %u channel: %u\n", frame.frame_type,
-//		frame.channel);
-//	printf("Method: %s\n", amqp_method_name(frame.payload.method.id));
-//	
-//	printf("Delivery: %u exchange: %.*s routingkey: %.*s\n",
-//		(unsigned)d->delivery_tag,
-//		(int)d->exchange.len, (char *)d->exchange.bytes,
-//		(int)d->routing_key.len, (char *)d->routing_key.bytes);
-//#endif
-//	ret = amqp_simple_wait_frame(conn, &frame);
-//	if (ret < 0) return NULL;
-//	if (frame.frame_type != AMQP_FRAME_HEADER) return NULL;
-//	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
-//	if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG == 0) return NULL;
-//
-//#ifdef MYDEBUG
-//	printf("Content-type: %.*s\n",
-//			(int)p->content_type.len, (char *)p->content_type.bytes);
-//#endif
-//	//receiving until message end
-//	body_target = (size_t)frame.payload.properties.body_size;
-//	body_received = 0;
-//
-//	while (body_received < body_target) {
-//		ret = amqp_simple_wait_frame(conn, &frame);
-//		if (ret < 0) break;
-//
-//		if (frame.frame_type != AMQP_FRAME_BODY) return NULL;
-//
-//		body_received += frame.payload.body_fragment.len;
-//		std::string message_((char*)frame.payload.body_fragment.bytes, frame.payload.body_fragment.len);
+//	amqp_rpc_reply_t ret = amqp_consume_message(conn, &envelope, NULL, 0);
+//	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+//	{
+//		errnum = RBT_CONSUME_FAIL;
+//		return NULL;
 //	}
+//	const amqp_basic_properties_t& props = envelope.message.properties;
+//	recbuf->append( std::string((char*)envelope.message.body.bytes, envelope.message.body.len));
+//
+//#ifdef MYDEBUG
+//	printf("Delivery %u, exchange %.*s routingkey %.*s\n",
+//		(unsigned)envelope.delivery_tag,
+//		(int)envelope.exchange.len, (char *)envelope.exchange.bytes,
+//		(int)envelope.routing_key.len, (char *)envelope.routing_key.bytes);
+//
+//	if (envelope.message.properties._flags & AMQP_BASIC_CONTENT_TYPE_FLAG) {
+//		printf("Content-type: %.*s\n",
+//			(int)envelope.message.properties.content_type.len,
+//			(char *)envelope.message.properties.content_type.bytes);
+//	}
+//	if (props.reply_to.bytes != NULL)
+//	{
+//		printf("Reply to queue: %.*s\n", props.reply_to.bytes, props.reply_to.len);
+//	}
+//	printf("Message body:%s\n", recbuf->c_str());
+//#endif
+//
+//	return recbuf;
 //}
 
-void RabbitMQ::get()
+/** consumer type2: using frame api  tested:slower than type1 */
+std::string* RabbitMQ::consume()
 {
+	amqp_frame_t frame;
+	amqp_basic_deliver_t *d;
+	amqp_basic_properties_t *p;
+	size_t body_target;
+	size_t body_received;
+	int ret;
+
+	amqp_maybe_release_buffers(conn);
+	ret = amqp_simple_wait_frame(conn, &frame);
+	if (ret != AMQP_STATUS_OK)  return NULL;
+	if (frame.frame_type != AMQP_FRAME_METHOD) return NULL;
+	if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) return NULL;
+	d = (amqp_basic_deliver_t *)frame.payload.method.decoded;
+#ifdef MYDEBUG
+	printf("Frame type: %u channel: %u\n", frame.frame_type,
+		frame.channel);
+	printf("Method: %s\n", amqp_method_name(frame.payload.method.id));
+
+	printf("Delivery: %u exchange: %.*s routingkey: %.*s\n",
+		(unsigned)d->delivery_tag,
+		(int)d->exchange.len, (char *)d->exchange.bytes,
+		(int)d->routing_key.len, (char *)d->routing_key.bytes);
+#endif
+	ret = amqp_simple_wait_frame(conn, &frame);
+	if (ret < 0) return NULL;
+	if (frame.frame_type != AMQP_FRAME_HEADER) return NULL;
+	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
+	if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG == 0) return NULL;
+
+#ifdef MYDEBUG
+	printf("Content-type: %.*s\n",
+			(int)p->content_type.len, (char *)p->content_type.bytes);
+#endif
+	//receiving until message end
+	body_target = (size_t)frame.payload.properties.body_size;
+	body_received = 0;
+
+	while (body_received < body_target) {
+		ret = amqp_simple_wait_frame(conn, &frame);
+		if (ret < 0) break;
+
+		if (frame.frame_type != AMQP_FRAME_BODY) return NULL;
+
+		body_received += frame.payload.body_fragment.len;
+		std::string message_((char*)frame.payload.body_fragment.bytes, frame.payload.body_fragment.len);
+	}
+}
+
+std::string* RabbitMQ::get(const char* queue)
+{
+	amqp_rpc_reply_t ret
+		= amqp_basic_get(conn, DEFAULT_CHANNEL, amqp_cstring_bytes(queue), 1);
+	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
+	{
+		errnum = RBT_GET_FAIL;
+		return NULL;
+	}
+
+	if (ret.reply.id == AMQP_BASIC_GET_EMPTY_METHOD)
+	{
+		errnum = RBT_GET_NOTHING;
+		return NULL;
+	}
+	
+	size_t body_remaining;
+	amqp_frame_t frame;
+	if (AMQP_STATUS_OK != amqp_simple_wait_frame(conn, &frame))
+	{
+		errnum = RBT_GET_CONTENT_FAIL;
+		return NULL;
+	}
+
+	if (frame.frame_type != AMQP_FRAME_HEADER)
+	{
+		errnum = RBT_WRONG_FRAME;
+		return NULL;
+	}
+
+	body_remaining = frame.payload.properties.body_size;
+	while (body_remaining) {
+		if (AMQP_FRAME_BODY != amqp_simple_wait_frame(conn, &frame))
+		{
+			errnum = RBT_GET_CONTENT_FAIL;
+			return NULL;
+		}
+		if (AMQP_FRAME_BODY != frame.frame_type)
+		{
+			errnum = RBT_WRONG_FRAME;
+			return NULL;
+		}
+		body_remaining -= frame.payload.body_fragment.len;
+		recbuf->append(frame.payload.body_fragment.bytes, frame.payload.body_fragment.len);
+	}
 
 }
 
