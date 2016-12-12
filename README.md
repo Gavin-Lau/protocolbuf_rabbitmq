@@ -1,4 +1,4 @@
-目的
+## 目的
 	提供一套基于rabbitmq-c为基础库的C++借口
 makefile生成
 	提供两套makefile机制：

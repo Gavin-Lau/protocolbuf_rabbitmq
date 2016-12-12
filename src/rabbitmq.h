@@ -10,30 +10,33 @@
 
 #include "common.h"
 #define		DEFAULT_CHANNEL		1
-#define		DEFAULT_AUTODEL		0
 class RabbitMQ{
 
 public:
-	enum EXCHANGE_TYPE {DIRECT = 0, FANOUT, TOPIC};
+	enum EXCHANGE_TYPE { DIRECT = 0, FANOUT, TOPIC };
 	RabbitMQ();
 	~RabbitMQ();
 	void connect(const char*host, unsigned short port, double timeout, int);
 	void declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType);
 	void declareQ(const char* queue);
+	std::string getReplyQ() { return replyToQ; }
 	/** must be clared first */
-	void setReplyQ(const char* queue) { replyToQ = queue; }
 	void bind(const char*exchange, const char* queue, const char* bindkey);
 	void unbind(const char*exchange, const char* queue, const char* bindkey);
 
 	void publish(const char*exchange, const char* routeKey, const char* data, size_t len);
+	void publishRPC(const char*exchange, const char* replyQ, const char* routeKey, const char* data, size_t len);
 
-	/** subscribe -> get next msg(only one message) -> unsubscribe TODO*/
-	void get(const char* queue);
+	/** subscribe -> get next msg(only one message) -> unsubscribe 
+		if the message is RPC type,replyQ will be set 
+	*/
+	std::string* RabbitMQ::get(const char* queue);
 
 	/** high performance for bulk/large-amount data*/
 	void consumeBegin(const char*queue);
+
+	/** if the message is RPC type,replyQ will be set */
 	std::string* consume();
-	std::string* consumeRPC(const char* replyMsg);
 	void consumeEnd()  { }
 
 	int getRabbitmqErrno(int ret);

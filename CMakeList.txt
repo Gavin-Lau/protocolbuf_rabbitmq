@@ -1,0 +1,214 @@
+
+cmake_minimum_required(VERSION 2.8)
+
+#dependcy
+include("cotire.cmake")
+
+project (HQSVR)
+
+# system check
+if(UNIX)
+    message("current platform is unix like!")
+    add_definitions(-D_LINUX)
+    set(OS_DIR "linux")
+else(WIN32)
+    message("current platform is windows!")
+    set(OS_DIR "win32")
+else()
+    message(FATAL_ERROR "current platform is unknown!")
+endif()
+
+
+
+# output dir
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${OS_DIR}/debug)
+set(CMAKE_PDB_OUTPUT_DIRECTORY     ${CMAKE_CURRENT_BINARY_DIR}/bin/${OS_DIR}/debug)
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
+# previous defines
+set(Public_DIR ../../../../Components)
+set(Public_SRC_DIR ../../../../Components/Local/C)
+set(Public_3dParty_DIR ../../../../Components/Third)
+
+
+set(Src_DIR src)
+set(Test_DIR test)
+
+
+#windows lib search dir
+set(Lib_WIN_DIR
+        ${Public_3dParty_DIR}/boost/lib/windows
+        ${Public_3dParty_DIR}/gtest/lib/windows
+        ${Public_3dParty_DIR}/libshove/lib/windows
+        ${Public_3dParty_DIR}/luajit-2.0.4/lib/windows
+        ${Public_3dParty_DIR}/mysqlpp/lib/windows
+        ${Public_3dParty_DIR}/poco/lib/windows
+        ${Public_3dParty_DIR}/mingw32
+    )
+    
+#linux search dir
+set(Lib_UNIX_DIR
+        ${Public_3dParty_DIR}/boost/lib/linux
+        ${Public_3dParty_DIR}/gtest/lib/linux
+        ${Public_3dParty_DIR}/libshove/lib/linux
+        ${Public_3dParty_DIR}/luajit-2.0.4/lib/linux
+        ${Public_3dParty_DIR}/mysqlpp/lib/linux
+        ${Public_3dParty_DIR}/poco/lib/linux
+    )    
+    
+#include dir
+include_directories(
+        ${Public_SRC_DIR}
+        
+        ${Public_3dParty_DIR}/boost/include
+        ${Public_3dParty_DIR}/gtest/include
+        ${Public_3dParty_DIR}/libshove/include
+        ${Public_3dParty_DIR}/luajit-2.0.4/include
+        ${Public_3dParty_DIR}/mysql/include
+        ${Public_3dParty_DIR}/mysqlpp/include
+        ${Public_3dParty_DIR}/poco/include
+        ${Src_DIR}
+        test
+        )
+
+#choose lib search dir
+if(UNIX)
+    link_directories(${Lib_UNIX_DIR})
+else()
+    link_directories(${Lib_WIN_DIR})
+endif()
+
+
+set(HQSVR_WIN_LIBS_DEBUG
+        libboost_date_time-mgw48-mt-1_51.a
+        libboost_date_time-mgw48-mt-d-1_51.a
+        libboost_regex-mgw48-mt-1_51.a
+        libboost_regex-mgw48-mt-d-1_51.a
+        libboost_serialization-mgw48-mt-1_51.a
+        libboost_serialization-mgw48-mt-d-1_51.a
+        libboost_system-mgw48-mt-1_51.a
+        libboost_system-mgw48-mt-d-1_51.a
+        libboost_thread-mgw48-mt-1_51.a
+        libboost_thread-mgw48-mt-d-1_51.a
+        libboost_chrono-mgw48-mt-1_51.a
+        libboost_chrono-mgw48-mt-d-1_51.a
+        libboost_wserialization-mgw48-mt-1_51.a
+        libboost_wserialization-mgw48-mt-d-1_51.a
+        
+        libPocoData.dll.a
+        libPocoDataMySQL.dll.a
+        libPocoDataODBC.dll.a
+        libPocoDataSQLite.dll.a
+        libPocoFoundation.dll.a
+        libPocoJSON.dll.a
+        libPocoNet.dll.a
+        libPocoUtil.dll.a
+        libPocoXML.dll.a
+        libPocoZip.dll.a
+        
+        libws2_32.a
+        libwsnmp32.a
+        libwsock32.a
+        libwst.a
+        libwtsapi32.a
+        
+        libcharset.dll.a
+        libz.dll.a
+        libiconv.dll.a
+        libshove.dll.a
+        
+        libgtest.a
+        libgtest_main.a
+        
+        libmysqlclient.a
+        libmysqlpp.a
+        
+        imagehlp.lib
+        
+        lua51.dll
+    )
+
+
+set(HQSVR_UNIX_LIBS_DEBUG
+        libboost_date_time.a
+        libboost_regex.a
+        libboost_serialization.a
+        libboost_system.a
+        libboost_thread.a
+        libboost_chrono.a
+        libboost_wserialization.a
+        
+        libPocoFoundationd.so.30
+        libPocoJSONd.so.30
+        libPocoNetd.so.30
+        libPocoUtild.so.30
+        libPocoXMLd.so.30
+        
+        libmysqlpp.so
+        libshove.so
+        libluajit.a
+        
+        libgtest.a
+        libgtest_main.a
+    )
+
+set(HQSVR_SRC
+        ${Src_DIR}/main.cpp
+        
+        ${Src_DIR}/aes.cpp
+        ${Src_DIR}/logproxy.cpp
+        ${Src_DIR}/network_msg.cpp
+        ${Src_DIR}/util_zlib_wrapper.cpp
+        ${Src_DIR}/xml_oper.cpp
+        
+        ${Src_DIR}/active_account_session.cpp
+        ${Src_DIR}/global_config.cpp
+    
+        ${Src_DIR}/network_msg_handler.cpp
+        ${Src_DIR}/network_server.cpp
+        ${Src_DIR}/network_session.cpp
+        ${Src_DIR}/network_session_pool.cpp
+        ${Src_DIR}/timed_task.cpp
+        ${Src_DIR}/network_logic_processor.cpp
+        
+        ${Src_DIR}/poco_modify/ThreadPoolEx.cpp
+
+        ${Src_DIR}/db/db_connection_pool.cpp
+        ${Src_DIR}/db/db_oper.cpp
+        ${Src_DIR}/db/hq_data_manager.cpp
+
+        test/test_read.cpp
+        test/test_thrift.cpp
+        test/test_timer.cpp
+        test/test_process_msg.cpp
+    )
+
+
+#enable debug info
+add_definitions (-g)
+
+
+add_definitions(-DBOOST_THREAD_USE_LIB)
+add_definitions(-DPOCO_STATIC)
+
+
+add_executable(HQSVR ${HQSVR_SRC})
+
+
+#dependcy
+if(UNIX)
+    target_link_libraries(HQSVR PUBLIC debug ${HQSVR_UNIX_LIBS_DEBUG})
+else()
+    target_link_libraries(HQSVR PUBLIC debug ${HQSVR_WIN_LIBS_DEBUG})
+endif()
+
+
+#preheader
+set_target_properties(HQSVR PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT ${Src_DIR}/hps_pch.h)
+cotire(HQSVR)
+
+
+
+
+
