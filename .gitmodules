@@ -1,0 +1,6 @@
+[submodule "third/rabbitmq-c"]
+	path = third/rabbitmq-c
+	url = https://github.com/alanxz/rabbitmq-c.git
+[submodule "third/protobuff"]
+	path = third/protobuff
+	url = https://github.com/google/protobuf.git
