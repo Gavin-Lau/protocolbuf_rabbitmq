@@ -1,9 +1,12 @@
 #include <iostream>
+
 #ifdef _MSC_VER
+
 # include <winsock2.h>
 # pragma comment(lib,"ws2_32.lib")
+
 #else
-# include <ctime>
+# include <sys/time.h>
 #endif
 
 
@@ -14,10 +17,11 @@
 using std::cout;
 using std::endl;
 
-const char RabbitMQ::ExTypeName[3][15] = { "direct", "fanout", "topic" };
+char RabbitMQ::ExTypeName[3][15] =  { "direct", "fanout", "topic" }; //msvc do not allow initial inside class, Micro. S**K!
 
-RabbitMQ::RabbitMQ()
-	: recbuf(new std::string)
+RabbitMQ::RabbitMQ(TYPE typ)
+	: recbuf(new std::string),
+	type(typ)
 {
 	conn = amqp_new_connection();
 	socket = amqp_tcp_socket_new(conn);
@@ -55,6 +59,7 @@ void RabbitMQ::connect(const char*host = "127.0.0.1",
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_LOGIN_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 		return;
 	}
 	amqp_channel_open(conn, channel);
@@ -62,6 +67,7 @@ void RabbitMQ::connect(const char*host = "127.0.0.1",
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_CHANNEL_OPEN_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 		return;
 	}
 }
@@ -79,13 +85,14 @@ void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
 			amqp_cstring_bytes(ExTypeName[exchangeType]),
 			0, //仅仅想查询某一个队列是否已存在，如果不存在，不想建立该队列，仍然可以调用queue.declare，只不过需要将参数passive设为true
 			0, //队列和交换机有一个创建时候指定的标志durable，直译叫做坚固的。durable的唯一含义就是具有这个标志的队列和交换机会在重启之后重新建立，它不表示说在队列当中的消息会在重启后恢复。
-			1, //当所有绑定队列都不再使用时，是否自动删除该交换机。
+			0, //当所有绑定队列都不再使用时，是否自动删除该交换机。
 			0, //表示这个exchange不可以被client用来推送消息，仅用来进行exchange和exchange之间的绑定。
 			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_DECLERE_EXCHANGE_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -101,13 +108,14 @@ void RabbitMQ::declareQ(const char* queue)
 			amqp_cstring_bytes(queue),
 			0, //当参数为true时，只是用来查询队列是否存在，不存在情况下不会新建队列
 			0, //队列是否持久化
-			1, //当前连接不在时，队列是否自动删除
+			0, //当前连接不在时，队列是否自动删除
 			0, //没有consumer时，队列是否自动删除
 			amqp_empty_table);
 	amqp_rpc_reply_t ret = amqp_get_rpc_reply(conn);
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_DECLERE_QUEUE_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -122,6 +130,7 @@ void RabbitMQ::bind(const char*exchange, const char* queue, const char* bindkey)
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_BIND_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -136,6 +145,7 @@ void RabbitMQ::unbind(const char*exchange, const char* queue, const char* bindke
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_BIND_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -166,6 +176,7 @@ void RabbitMQ::publish(const char*exchange, const char* routeKey, const char* da
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_PUBLISH_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -176,12 +187,12 @@ void RabbitMQ::publishRPC(const char*exchange, const char* replyQ, const char* r
 	amqp_bytes_t sbuf;
 	sbuf.bytes = (void*)data;
 	sbuf.len = len;
-	
+
 	amqp_basic_properties_t props;
 	props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG |
 			AMQP_BASIC_DELIVERY_MODE_FLAG |
 			AMQP_BASIC_REPLY_TO_FLAG |
-			AMQP_BASIC_CORRELATION_ID_FLAG; 
+			AMQP_BASIC_CORRELATION_ID_FLAG;
 	props.content_type = amqp_cstring_bytes("text/plain");
 	props.reply_to = amqp_cstring_bytes(replyQ);
 	props.delivery_mode = 2;//non-persistent (1) or persistent (2)
@@ -201,6 +212,7 @@ void RabbitMQ::publishRPC(const char*exchange, const char* replyQ, const char* r
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_PUBLISH_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -220,6 +232,7 @@ void RabbitMQ::consumeBegin(const char*queue)
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_CONSUME_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 	}
 }
 
@@ -292,7 +305,7 @@ std::string* RabbitMQ::consume()
 	if (frame.frame_type != AMQP_FRAME_HEADER) return NULL;
 	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
 	if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG == 0) return NULL;
-
+	if (p->reply_to.bytes != NULL && type == RabbitMQ::SERVER) replyToQ = std::string((char*)p->reply_to.bytes, p->reply_to.len);
 #ifdef MYDEBUG
 	printf("Content-type: %.*s\n",
 			(int)p->content_type.len, (char *)p->content_type.bytes);
@@ -322,15 +335,16 @@ std::string* RabbitMQ::get(const char* queue)
 	if (ret.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		errnum = RBT_GET_FAIL;
+		cout << getRabbitmqErrstr(ret).c_str() << endl;
 		return NULL;
 	}
 
 	if (ret.reply.id == AMQP_BASIC_GET_EMPTY_METHOD)
 	{
 		errnum = RBT_GET_NOTHING;
-		return NULL;
+		//return NULL;
 	}
-	
+
 	size_t body_remaining;
 	amqp_frame_t frame;
 	amqp_basic_properties_t *p;
@@ -374,14 +388,27 @@ std::string* RabbitMQ::get(const char* queue)
 }
 
 //todo
-int RabbitMQ::getRabbitmqErrno(int ret)
+std::string RabbitMQ::getRabbitmqErrstr(amqp_rpc_reply_t& ret)
 {
-	return 0;
-}
 
-//todo
-std::string RabbitMQ::getRabbitmqErrstr(int err)
-{
-	return "";
-}
+	switch (ret.reply_type) {
 
+		case AMQP_RESPONSE_NONE:
+			errmsg = "missing RPC reply type!";
+			break;
+
+		case AMQP_RESPONSE_LIBRARY_EXCEPTION:
+			errmsg = amqp_error_string2(ret.library_error);
+			break;
+
+		case AMQP_RESPONSE_SERVER_EXCEPTION: {
+			amqp_connection_close_t *m = (amqp_connection_close_t *)ret.reply.decoded;
+			errmsg = std::string((char *)m->reply_text.bytes, (int)m->reply_text.len);
+			break;
+		}
+		default:
+			errmsg = "Unkown error!";
+			break;
+	}
+	return errmsg;
+}

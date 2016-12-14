@@ -1,0 +1,26 @@
+syntax = "proto3";
+package students;
+
+
+message Student {
+ 	int32 id = 1;  // Unique ID number for this person.
+	string name = 2;
+	string addr = 3;
+
+	enum Gender  {
+		MALE = 0;
+		FEMALE = 1;
+	}
+	Gender gender = 4;
+
+	message Scole{
+		float chinese = 1;
+		float math = 2;
+		float english = 3;
+	}
+	Scole scole = 5;
+}
+
+message StuList {
+  repeated Student stu = 1;
+}

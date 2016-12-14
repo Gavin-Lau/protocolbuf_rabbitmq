@@ -70,13 +70,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\inipaser.cpp" />
     <ClCompile Include="..\src\rabbitmq.cpp" />
-    <ClCompile Include="..\test\test_main.cpp" />
+    <ClCompile Include="..\test\rabbitma_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\timer.h" />
-    <ClInclude Include="..\src\inipaser.h" />
     <ClInclude Include="..\src\rabbitmq.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

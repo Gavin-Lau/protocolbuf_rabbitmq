@@ -1,6 +1,17 @@
 #ifndef _COMMON_TOOLS_H_
 #define _COMMON_TOOLS_H_
 
+#include <cstdio>
+
+#ifdef _WIN32
+# ifdef DLLEXPORT
+#  define DLLAPI __declspec(dllexport)
+# else
+#  define DLLAPI __declspec(dllimport)
+# endif
+#else
+# define DLLAPI
+#endif
 
 #define IS_VALID_PCHAR(pchar)		(NULL != pchar && 0 != pchar[0])
 #define IS_VALID_NUM_0EXCEPT(val)	(val > 0)
@@ -29,7 +40,17 @@
 #define		RBT_PUBLISH_FAIL				-1007
 #define		RBT_CONSUME_FAIL				-1008
 #define		RBT_DECLERE_QUEUE_FAIL			-1009
+#define		RBT_GET_FAIL			-1009
+#define		RBT_GET_NOTHING			-1009
+#define		RBT_GET_CONTENT_FAIL			-1009
+#define		RBT_WRONG_FRAME			-1009
 
-
+inline std::string uniqueKey()
+{
+    static long long ikey = 0;
+    char strkey[32] = {0};
+    sprintf(strkey, "%lld", ikey);
+    return strkey;
+}
 
 #endif // _COMMON_TOOLS_H_
