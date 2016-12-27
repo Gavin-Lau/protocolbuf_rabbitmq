@@ -50,8 +50,9 @@ endif ()
 # previous defines
 set(Src_DIR src)
 set(Test_DIR test)
-set(Third_DIR ${PROJECT_SOURCE_DIR}/third)
-
+set(Third_DIR ${PROJECT_SOURCE_DIR}/../third)
+set(Protobuf_Lib_DIR ${Third_DIR}/protobuf/lib/${OS_DIR}/${Platform_DIR})
+set(Rabbitmq_Lib_DIR ${Third_DIR}/rabbitmq/lib/${OS_DIR}/${Platform_DIR})
 #include dir
 include_directories(
     include
@@ -61,18 +62,17 @@ include_directories(
 )
 
 link_directories(
-    ${Third_DIR}/protobuf/lib/${OS_DIR}/${Platform_DIR}
+    ${Third_DIR}
     ${Third_DIR}/rabbitmq/lib/${OS_DIR}/${Platform_DIR}
 )
 
 #complier check
 message("libs dir debug:${Third_DIR}/protobuf/lib/${OS_DIR}/${Platform_DIR} ${Third_DIR}/rabbitmq/lib/${OS_DIR}/${Platform_DIR}")
-message("libs prarams debug: protobuf${Lib_type} protoc${Lib_type} rabbitmq${Lib_type}.4")
+message("libs prarams debug: libprotobuf${Lib_type}${Lib_suffix} librabbitmq${Lib_type}.4${Lib_suffix}")
 
 set(Lib_List
-        libprotobuf${Lib_type}${Lib_suffix}
-        libprotoc${Lib_type}${Lib_suffix}
-        librabbitmq${Lib_type}.4${Lib_suffix}
+    ${Protobuf_Lib_DIR}/libprotobuf${Lib_type}${Lib_suffix}
+    ${Rabbitmq_Lib_DIR}/librabbitmq${Lib_type}.4${Lib_suffix}
 )
 
 set(Server_FILES

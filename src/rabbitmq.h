@@ -12,11 +12,12 @@
 #include "common.h"
 #define		DEFAULT_CHANNEL		1
 
+//TODO: transaction support
 class RabbitMQ{
 
 public:
 	enum EXCHANGE_TYPE { DIRECT = 0, FANOUT, TOPIC };
-	enum TYPE { SERVER = 0, CLIENT};
+	enum TYPE { SERVER = 0, CLIENT}; //not good need fix
 	RabbitMQ(TYPE typ);
 	~RabbitMQ();
 	void connect(const char*host, unsigned short port, double timeout, int);

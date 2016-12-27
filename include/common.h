@@ -1,5 +1,5 @@
-#ifndef _COMMON_TOOLS_H_
-#define _COMMON_TOOLS_H_
+#ifndef _COMMON_H_
+#define _COMMON_H_
 
 #include <cstdio>
 
@@ -40,17 +40,21 @@
 #define		RBT_PUBLISH_FAIL				-1007
 #define		RBT_CONSUME_FAIL				-1008
 #define		RBT_DECLERE_QUEUE_FAIL			-1009
-#define		RBT_GET_FAIL			-1009
-#define		RBT_GET_NOTHING			-1009
-#define		RBT_GET_CONTENT_FAIL			-1009
-#define		RBT_WRONG_FRAME			-1009
+#define		RBT_GET_FAIL					-1010
+#define		RBT_GET_NOTHING					-1011
+#define		RBT_GET_CONTENT_FAIL			-1012
+#define		RBT_WRONG_FRAME					-1013
 
-inline std::string uniqueKey()
+/** createNew = false : get last uniqueKey
+ *  createNew = true : get a new uniqueKey
+ */
+inline std::string uniqueKey(bool createNew = true)
 {
-    static long long ikey = 0;
-    char strkey[32] = {0};
-    sprintf(strkey, "%lld", ikey);
-    return strkey;
+	static long long ikey = 0;
+	char strkey[32] = {0};
+	if (createNew) ikey++;
+	sprintf(strkey, "%lld", ikey);
+	return strkey;
 }
 
-#endif // _COMMON_TOOLS_H_
+#endif // _COMMON_H_

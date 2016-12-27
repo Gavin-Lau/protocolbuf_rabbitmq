@@ -3,11 +3,23 @@
 #include <windows.h>
 
 #include "rabbitmq.h"
-#include "timer.h"
+#include "microtimer.h"
+#include "pack.h"
+
+#ifdef _MSC_VER
+# if  defined(_DEBUG) || defined(DEBUG)
+#  pragma comment(lib, "libprotobufd.lib")
+#  pragma comment(lib, "librabbitmqd.4.lib")
+# else
+#  pragma comment(lib, "libprotobuf.lib")
+#  pragma comment(lib, "librabbitmq.4.lib")
+# endif
+#endif
 
 using std::cout;
 using std::endl;
 
+//simple echo server
 int main()
 {
 	RabbitMQ rmq(RabbitMQ::SERVER);
@@ -22,9 +34,10 @@ int main()
 	while (count--)
 	{
 		std::string message = *rmq.consume();
+		unpack(message);
 		//cout << "server message reveived : " << message.c_str() << endl;
 		std::string replyque = rmq.getReplyQ();
 		rmq.publish("test1", replyque.c_str(), message.c_str(), message.length());
 	}
-	cout << "接收并返回\"Hello World\"[10000]次，用时[" << timer.expired() << "]ms." << endl;
+	cout << "Server received and echo[10000]times, time espired[" << timer.expired() << "]ms." << endl;
 }

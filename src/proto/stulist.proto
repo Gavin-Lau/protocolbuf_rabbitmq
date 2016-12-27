@@ -1,9 +1,9 @@
 syntax = "proto3";
-package students;
+package ClassBook;
 
 
 message Student {
- 	int32 id = 1;  // Unique ID number for this person.
+	int32 id = 1;  // Unique ID number for this student.
 	string name = 2;
 	string addr = 3;
 

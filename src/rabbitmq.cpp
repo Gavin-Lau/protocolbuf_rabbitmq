@@ -70,6 +70,14 @@ void RabbitMQ::connect(const char*host = "127.0.0.1",
 		cout << getRabbitmqErrstr(ret).c_str() << endl;
 		return;
 	}
+	/*  
+	amqp_basic_qos_ok_t * amqp_basic_qos(amqp_connection_state_t state, amqp_channel_t channel, uint32_t prefetch_size, uint16_t prefetch_count, amqp_boolean_t global)	
+	qos是 quality of service，我们这里使用主要用于控制预取消息数，避免消息按条数均匀分配，需要和no_ack配合使用
+	*/
+	amqp_basic_qos_ok_t *qos = amqp_basic_qos(conn, DEFAULT_CHANNEL, 
+		0, //prefetch_size 以bytes为单位，0为unlimited		
+		1, //prefetch_count 预取的消息条数
+		0);
 }
 
 void RabbitMQ::declarExchange(const char* exchange, EXCHANGE_TYPE exchangeType)
@@ -197,6 +205,7 @@ void RabbitMQ::publishRPC(const char*exchange, const char* replyQ, const char* r
 	props.reply_to = amqp_cstring_bytes(replyQ);
 	props.delivery_mode = 2;//non-persistent (1) or persistent (2)
 	props.correlation_id = amqp_cstring_bytes(uniqueKey().c_str());
+	
 	/**
 	AMQP_CALL amqp_basic_publish(amqp_connection_state_t state, amqp_channel_t channel,
 	amqp_bytes_t exchange, amqp_bytes_t routing_key,
@@ -305,7 +314,10 @@ std::string* RabbitMQ::consume()
 	if (frame.frame_type != AMQP_FRAME_HEADER) return NULL;
 	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
 	if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG == 0) return NULL;
-	if (p->reply_to.bytes != NULL && type == RabbitMQ::SERVER) replyToQ = std::string((char*)p->reply_to.bytes, p->reply_to.len);
+	//sometimes the pointer to reply_to.bytes is not NULL, and the pointer is not used(wild pointer)
+	//so we don't know wether
+	if (p->reply_to.bytes != NULL && type == RabbitMQ::SERVER) 
+		replyToQ = std::string((char*)p->reply_to.bytes, p->reply_to.len);
 #ifdef MYDEBUG
 	printf("Content-type: %.*s\n",
 			(int)p->content_type.len, (char *)p->content_type.bytes);
@@ -361,13 +373,12 @@ std::string* RabbitMQ::get(const char* queue)
 	}
 
 	p = (amqp_basic_properties_t *)frame.payload.properties.decoded;
-	if (p->reply_to.bytes != NULL)
-	{
-		replyToQ = (char*)p->reply_to.bytes;
+	if (p->reply_to.bytes != NULL && type == RabbitMQ::SERVER)	
+		replyToQ = std::string((char*)p->reply_to.bytes, p->reply_to.len);
 #ifdef MYDEBUG
 		cout << "reply Q : " << replyToQ.c_str() << endl;
 #endif
-	}
+	
 	body_remaining = frame.payload.properties.body_size;
 	while (body_remaining) {
 		if (AMQP_STATUS_OK != amqp_simple_wait_frame(conn, &frame))
@@ -387,10 +398,8 @@ std::string* RabbitMQ::get(const char* queue)
 	return recbuf;
 }
 
-//todo
 std::string RabbitMQ::getRabbitmqErrstr(amqp_rpc_reply_t& ret)
 {
-
 	switch (ret.reply_type) {
 
 		case AMQP_RESPONSE_NONE:

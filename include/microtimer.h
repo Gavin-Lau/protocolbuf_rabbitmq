@@ -1,20 +1,18 @@
-#ifndef _TIMER_H_
-#define _TIMER_H_
-
-#include <cstdint>
+#ifndef _MICROTIMER_H_
+#define _MICROTIMER_H_
 
 #if defined(_WIN32)
 #include <windows.h>
-inline uint64_t microsec_now(void)
+inline unsigned long long microsec_now(void)
 {
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);
-	return (((uint64_t)ft.dwHighDateTime << 32) | (uint64_t)ft.dwLowDateTime)
+	return (((unsigned long long)ft.dwHighDateTime << 32) | (unsigned long long)ft.dwLowDateTime)
 		/ 10;
 }
 #else
 #include <sys/time.h>
-inline uint64_t microsec_now(void)
+inline unsigned long long microsec_now(void)
 {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -27,9 +25,9 @@ class MicroTimer{
 public:
 	MicroTimer() { mseconds = microsec_now(); }
 	void reset() { mseconds = microsec_now(); }
-	uint64_t expired() { return (microsec_now() - mseconds);  }
+	unsigned long long  expired() { return (microsec_now() - mseconds);  }
 private:
-	uint64_t  mseconds;
+	unsigned long long  mseconds;
 };
 
-#endif _TIMER_H_
+#endif // _MICROTIMER_H_
